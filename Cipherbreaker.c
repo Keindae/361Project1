@@ -25,7 +25,7 @@ void readFreq(float given[], char fname[]){
         exit(0);
     }
     //This converts each piece of the cipher to a double, and gives each number the correct value. 
-    while(fgets(str, 20, filein) != NULL){
+    while(fgets(str,20, filein) != NULL){
         givenFrequency[x] = atof(str+2);
         x++;
     }
@@ -46,7 +46,7 @@ void calcFreq(float found[], char fname[]){
         printf("Cannot Open File");
         exit(0);
     }
-
+    //grabs each character, checks to see if it is an alpha, and then calculates the frequency for each character. 
     while((c = fgetc(filein)) != EOF){
         if(isalpha(c)){
             if(c >= 'a' && c <= 'z'){
@@ -69,18 +69,20 @@ void calcFreq(float found[], char fname[]){
 //Rotate function rotates the character in the ch parameter down the alphabet for the number of positions as given in parameter num 
 //and it is returns the resulting character. 
 char rotate( char ch, int num){
+
     if(islower(ch)){
         return((((ch - 'a') + num) % 26) + 'a');
     }else{
         return((((ch - 'A') + num) % 26) + 'A');
-
     }
+    return ch;
 
 }
-
+//Figures out the the difference between the two values that are passed in from the two given values in 
+//each position in the array.
 float diffTwoSquares(float a, float b){
     float x = a - b;
-    return x*x;
+    return ((x*x)/2);
 }
 void rotateOne(float a[], int n){
     int i;
@@ -111,35 +113,42 @@ int findLeast(float array[], int size){
     return f;
 }
 
+//findKey function takes in the givenFrequency array and the calcFrequency array to 
+//put together a difference array.
+int findKey(float given[], float found[]){
 
-int findkey(float given[], float found[]){
-
-    float f;
+    float sum;
     float difference[26];
+    //Loops through the calcFrequency array and takes each position in that array 
+    //and sends it to the rotateArray funciton
     for(int x = 0; x < 26; x++){
         rotateArray(found, 26, x);
-        f = 0;
+        sum = 0;
+        //This send each postion in the givenFreq and calcFreq array to figure out
+        //the difference of two squares and then is stored in sum. The difference array is then updated
+        //at that position with the sum value. 
         for( int y = 0; y < 26; y++){
-            f += diffTwoSquares(given[y], found[y]);
+            sum += diffTwoSquares(given[y], found[y]);
         }
-        difference[x] = f;
+        difference[x] = sum;
     }
     return findLeast(difference, 26);
 }
 
 
 //Gets the input file and the output file, and does the decrypting 
-void decrypt(int key, char in[], char out[]){
+void decrypt(int key, char *in, char *out){
     FILE *filein, *fileout;
     char ch;
+    //Opens both the encrypted file and the output file that are going to be used
     filein = fopen(in, "r");
     fileout = fopen(out, "w");
-
+    //Checks to see if the file exists
     if(filein == NULL || fileout == NULL){
         printf("Error, file doesn't exist, or trouble opening\n");
         exit(-1);
     }
-    
+    //Loops through the entire file, grabbing each character and then throws it into the rotate function to decrypt it correctly
     while(fscanf(filein, "%c", &ch) != EOF){
         fprintf(fileout, "%c", rotate(ch, key));
     }
@@ -148,10 +157,10 @@ void decrypt(int key, char in[], char out[]){
     fclose(fileout);
 }
 
-
-int main(int argc, char * argv[]){
+//Main of the program that is used to run the program. Calls each function in order that is required to correctly reverse the file
+//encryption
+int main(int argc, char *argv[]){
     int key;
-
     if (argc != 3){
         printf("REQUIRED INPUT AND OUTPUT FILE\n");
         exit(1);
